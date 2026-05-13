@@ -17,7 +17,29 @@
       overflow: hidden;
     }
 
+    .petals {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .petal {
+      position: absolute;
+      top: -30px;
+      animation: cair linear infinite;
+      opacity: 0.6;
+    }
+
+    @keyframes cair {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 0.6; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+
     #app {
+      position: relative;
+      z-index: 1;
       text-align: center;
       padding: 2rem;
     }
@@ -25,8 +47,8 @@
     .hearts {
       font-size: 3rem;
       margin-bottom: 1.5rem;
-      animation: pulse 1.5s ease-in-out infinite;
       display: block;
+      animation: pulse 1.5s ease-in-out infinite;
     }
 
     @keyframes pulse {
@@ -39,7 +61,6 @@
       font-weight: 600;
       color: #c23b72;
       margin-bottom: 0.5rem;
-      line-height: 1.3;
     }
 
     .sub {
@@ -48,49 +69,50 @@
       margin-bottom: 2.5rem;
     }
 
-    #btn-sim {
-      background: #D4537E;
-      color: #fff;
-      border: none;
-      padding: 16px 48px;
-      border-radius: 14px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.1s, background 0.2s;
-      box-shadow: 0 4px 18px rgba(212,83,126,0.3);
-    }
-
-    #btn-sim:hover { background: #b83d68; transform: scale(1.06); }
-    #btn-sim:active { transform: scale(0.97); }
-
     .btn-row {
       display: flex;
       gap: 16px;
       align-items: center;
       justify-content: center;
-      flex-wrap: wrap;
     }
 
-    #btn-nao {
-      background: #f5e6ec;
-      color: #a07080;
-      border: 1.5px solid #e8c0d0;
-      padding: 16px 48px;
+    #btn-sim {
+      width: 140px;
+      height: 56px;
       border-radius: 14px;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: #D4537E;
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(212,83,126,0.3);
+      transition: transform 0.1s, background 0.2s;
+    }
+    #btn-sim:hover { background: #b83d68; transform: scale(1.06); }
+    #btn-sim:active { transform: scale(0.97); }
+
+    #btn-nao {
+      width: 140px;
+      height: 56px;
+      border-radius: 14px;
+      font-size: 1.1rem;
       font-weight: 500;
       cursor: pointer;
-      position: static;
-      transition: font-size 0.2s;
-      user-select: none;
+      border: 1.5px solid #e8c0d0;
+      background: #f5e6ec;
+      color: #a07080;
+      white-space: nowrap;
+      overflow: hidden;
+      transition: background 0.15s;
     }
+    #btn-nao:hover { background: #fde8f0; }
 
     #btn-nao.fugindo {
       position: fixed;
+      width: 140px;
+      height: 56px;
     }
-
-    #btn-nao:hover { background: #fde8f0; }
 
     .msg-fuga {
       font-size: 0.9rem;
@@ -99,29 +121,6 @@
       min-height: 22px;
       font-style: italic;
     }
-
-    .petals {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .petal {
-      position: absolute;
-      top: -30px;
-      font-size: 1.4rem;
-      animation: cair linear infinite;
-      opacity: 0.6;
-    }
-
-    @keyframes cair {
-      0%   { transform: translateY(0) rotate(0deg); opacity: 0.6; }
-      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
-    }
-
-    #app { position: relative; z-index: 1; }
   </style>
 </head>
 <body>
@@ -141,6 +140,7 @@
 
 <script>
   let tentativas = 0;
+  let jaTravou = false;
 
   const msgs = [
     "Ei, fica quieto aí! 😤",
@@ -155,26 +155,24 @@
     "Cansou? O sim tá te esperando! 💕",
   ];
 
-  function posicionarNaoInicial() {}
-
   function naoClicked() {
     tentativas++;
     const btn = document.getElementById('btn-nao');
     const msgEl = document.getElementById('msg-fuga');
 
-    if (!btn.classList.contains('fugindo')) {
+    if (!jaTravou) {
+      jaTravou = true;
       const rect = btn.getBoundingClientRect();
       btn.style.left = rect.left + 'px';
       btn.style.top  = rect.top  + 'px';
-      btn.style.width = rect.width + 'px';
       btn.classList.add('fugindo');
     }
 
+    const BW = 140;
+    const BH = 56;
     const margin = 24;
-    const bw = btn.offsetWidth;
-    const bh = btn.offsetHeight;
-    const maxX = window.innerWidth  - bw - margin;
-    const maxY = window.innerHeight - bh - margin;
+    const maxX = window.innerWidth  - BW - margin;
+    const maxY = window.innerHeight - BH - margin;
 
     const x = Math.floor(Math.random() * (maxX - margin) + margin);
     const y = Math.floor(Math.random() * (maxY - margin) + margin);
@@ -182,17 +180,13 @@
     btn.style.left = x + 'px';
     btn.style.top  = y + 'px';
 
-    const novoTamanho = Math.max(10, 1.2 - tentativas * 0.08);
-    btn.style.fontSize = novoTamanho + 'rem';
-
     msgEl.textContent = msgs[Math.min(tentativas - 1, msgs.length - 1)];
   }
 
   function simClicked() {
-    window.location.href = 'https://www.youtube.com/watch?v=IXdNnw99-Ic';
+    window.location.href = 'https://youtu.be/12KbOAc8vmk?si=_GR_eCG9ZQstJt4U';
   }
 
-  // pétalas caindo
   const petalDiv = document.getElementById('petals');
   const emojis = ['🌸', '💗', '🌷', '💕', '✨'];
   for (let i = 0; i < 18; i++) {
@@ -201,12 +195,10 @@
     p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
     p.style.left = Math.random() * 100 + 'vw';
     p.style.animationDuration = (4 + Math.random() * 6) + 's';
-    p.style.animationDelay = (Math.random() * 6) + 's';
+    p.style.animationDelay    = (Math.random() * 6)     + 's';
     p.style.fontSize = (0.8 + Math.random() * 1.2) + 'rem';
     petalDiv.appendChild(p);
   }
-
-  window.addEventListener('load', () => {});
 </script>
 </body>
 </html>
